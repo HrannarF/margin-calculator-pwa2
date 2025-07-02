@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    // Apply saved theme before page renders
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon-192.png">
   <meta name="theme-color" content="#1e1e1e">
@@ -23,15 +32,15 @@
 
     body {
       font-family: Arial, sans-serif;
-      background-color: var(--bg-dark);
-      color: var(--text-light);
+      background-color: var(--bg-light);
+      color: var(--text-dark);
       padding: 20px;
       margin: auto;
       max-width: 550px;
       transition: background-color var(--transition-speed), color var(--transition-speed);
     }
 
-    body.dark {
+    html.dark body {
       background-color: var(--bg-dark);
       color: var(--text-light);
     }
@@ -87,18 +96,22 @@
       transform: scale(1.02);
     }
 
-    body.dark button {
+    html.dark button {
       background-color: var(--primary-dark);
     }
 
     .result {
       margin-top: 20px;
       font-size: 1rem;
-      background-color: #333;
+      background-color: #ddd;
       padding: 15px;
       border-radius: 6px;
       display: none;
       animation: fadeIn 0.4s ease-in-out;
+    }
+
+    html.dark .result {
+      background-color: #333;
     }
 
     table {
@@ -124,6 +137,10 @@
     }
 
     tbody tr:nth-child(even) {
+      background-color: #eee;
+    }
+
+    html.dark tbody tr:nth-child(even) {
       background-color: #2b2b2b;
     }
 
@@ -157,7 +174,7 @@
     }
   </style>
 </head>
-<body class="dark">
+<body>
 
   <h1>Sales Margin Calculator</h1>
 
@@ -193,6 +210,20 @@
 
   <script>
     const maxEntries = 20;
+
+    function applyTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
 
     function loadHistory() {
       const history = JSON.parse(localStorage.getItem('calcHistory')) || [];
@@ -285,11 +316,10 @@
       }
     }
 
-    function toggleTheme() {
-      document.body.classList.toggle('dark');
-    }
-
-    window.onload = loadHistory;
+    window.onload = function () {
+      applyTheme();
+      loadHistory();
+    };
   </script>
 
   <script>

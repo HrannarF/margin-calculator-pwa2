@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png">
+  <meta name="theme-color" content="#1e1e1e">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sales Margin Calculator</title>
+  <style>
+    :root {
+      --bg-light: #f4f4f4;
+      --bg-dark: #1e1e1e;
+      --text-light: #ffffff;
+      --text-dark: #1e1e1e;
+      --primary-light: #666;
+      --primary-dark: #ccc;
+      --error: #ff4d4d;
+      --transition-speed: 0.3s;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      padding: 20px;
+      margin: auto;
+      max-width: 550px;
+      transition: background-color var(--transition-speed), color var(--transition-speed);
+    }
+
+    body.dark {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 1.8rem;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-size: 1rem;
+    }
+
+    input[type="number"] {
+      width: 96.5%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #aaa;
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: border var(--transition-speed), background-color var(--transition-speed);
+    }
+
+    input.invalid {
+      border-color: var(--error);
+      background-color: #ffe6e6;
+    }
+
+    .error-msg {
+      color: var(--error);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 20px;
+      background-color: var(--primary-light);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color var(--transition-speed), transform 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #444;
+      transform: scale(1.02);
+    }
+
+    body.dark button {
+      background-color: var(--primary-dark);
+    }
+
+    .result {
+      margin-top: 20px;
+      font-size: 1rem;
+      background-color: #333;
+      padding: 15px;
+      border-radius: 6px;
+      display: none;
+      animation: fadeIn 0.4s ease-in-out;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 30px;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #aaa;
+      text-align: center;
+    }
+
+    th {
+      background-color: #888;
+      color: white;
+    }
+
+    tbody tr {
+      animation: fadeIn 0.4s ease-in-out;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #2b2b2b;
+    }
+
+    #clearHistoryBtn {
+      background-color: #888;
+    }
+
+    #clearHistoryBtn:hover {
+      background-color: #555;
+    }
+
+    #toggleThemeBtn {
+      background-color: #aaa;
+      margin-top: 10px;
+    }
+
+    #toggleThemeBtn:hover {
+      background-color: #666;
+    }
+
+    .footer-note {
+      margin-top: 40px;
+      font-size: 0.85rem;
+      color: #ccc;
+      text-align: left;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="dark">
+
+  <h1>Sales Margin Calculator</h1>
+
+  <label for="cost">Cost Price (AUD):</label>
+  <input type="number" id="cost" placeholder="Enter cost price" min="0" step="0.01" />
+  <div class="error-msg" id="costError"></div>
+
+  <label for="margin">Desired Margin (%):</label>
+  <input type="number" id="margin" placeholder="Enter desired margin (0-99.99)" min="0" max="99.99" step="0.01" />
+  <div class="error-msg" id="marginError"></div>
+
+  <button onclick="calculateSellingPrice()">Calculate Selling Price</button>
+
+  <div class="result" id="output"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Cost (AUD)</th>
+        <th>Margin (%)</th>
+        <th>Selling Price (AUD)</th>
+        <th>Profit (AUD)</th>
+      </tr>
+    </thead>
+    <tbody id="historyBody"></tbody>
+  </table>
+
+  <button id="clearHistoryBtn" onclick="clearHistory()">Clear History</button>
+  <button id="toggleThemeBtn" onclick="toggleTheme()">Toggle Dark Mode</button>
+  <button onclick="alert('Please direct any complaints or suggestions to hfreysson@gmail.com')">Support</button>
+
+  <div class="footer-note">Made by Hrannar Freysson</div>
+
+  <script>
+    const maxEntries = 20;
+
+    function loadHistory() {
+      const history = JSON.parse(localStorage.getItem('calcHistory')) || [];
+      renderHistory(history);
+    }
+
+    function saveToHistory(entry) {
+      let history = JSON.parse(localStorage.getItem('calcHistory')) || [];
+      history.unshift(entry);
+      if (history.length > maxEntries) {
+        history.pop();
+      }
+      localStorage.setItem('calcHistory', JSON.stringify(history));
+      renderHistory(history);
+    }
+
+    function renderHistory(history) {
+      const tbody = document.getElementById('historyBody');
+      tbody.innerHTML = '';
+      history.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.cost}</td>
+          <td>${row.margin}</td>
+          <td>${row.price}</td>
+          <td>${row.profit}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function validateInput(id, condition, message) {
+      const input = document.getElementById(id);
+      const error = document.getElementById(id + 'Error');
+      if (!condition) {
+        input.classList.add('invalid');
+        error.textContent = message;
+        return false;
+      } else {
+        input.classList.remove('invalid');
+        error.textContent = '';
+        return true;
+      }
+    }
+
+    function calculateSellingPrice() {
+      const costInput = document.getElementById('cost');
+      const marginInput = document.getElementById('margin');
+      const cost = parseFloat(costInput.value);
+      const marginPercent = parseFloat(marginInput.value);
+      const output = document.getElementById('output');
+
+      const costValid = validateInput('cost', !isNaN(cost) && cost > 0, 'Enter a valid cost greater than 0.');
+      const marginValid = validateInput('margin', !isNaN(marginPercent) && marginPercent > 0 && marginPercent < 100, 'Enter margin between 0 and 100.');
+
+      if (!costValid || !marginValid) {
+        output.style.display = 'none';
+        return;
+      }
+
+      const sellingPrice = cost / (1 - marginPercent / 100);
+      const profit = sellingPrice - cost;
+
+      const formattedPrice = sellingPrice.toFixed(2);
+      const formattedProfit = profit.toFixed(2);
+      const formattedCost = cost.toFixed(2);
+      const formattedMargin = marginPercent.toFixed(2);
+
+      output.style.display = 'block';
+      output.innerHTML = `
+        <strong>Cost Price:</strong> AUD ${formattedCost}<br>
+        <strong>Required Selling Price:</strong> AUD ${formattedPrice}<br>
+        <strong>Profit:</strong> AUD ${formattedProfit}<br>
+        <strong>To achieve a margin of:</strong> ${formattedMargin}%
+      `;
+
+      const entry = {
+        cost: formattedCost,
+        margin: formattedMargin,
+        price: formattedPrice,
+        profit: formattedProfit
+      };
+      saveToHistory(entry);
+    }
+
+    function clearHistory() {
+      if (confirm('Are you sure you want to clear all saved history?')) {
+        localStorage.removeItem('calcHistory');
+        document.getElementById('historyBody').innerHTML = '';
+      }
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+    }
+
+    window.onload = loadHistory;
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then(reg => console.log("✅ Service Worker registered:", reg.scope))
+          .catch(err => console.error("❌ Service Worker registration failed:", err));
+      });
+    }
+  </script>
+</body>
+</html>

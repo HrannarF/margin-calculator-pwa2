@@ -1,18 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>
-    // Apply saved theme before page renders
-    (function() {
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme === 'dark') {
-        document.documentElement.classList.add('dark');
-      }
-    })();
-  </script>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon-192.png">
-  <meta name="theme-color" content="#1e1e1e">
+  <meta name="theme-color" content="#f4f4f4">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta charset="UTF-8" />
@@ -21,11 +12,8 @@
   <style>
     :root {
       --bg-light: #f4f4f4;
-      --bg-dark: #1e1e1e;
-      --text-light: #ffffff;
       --text-dark: #1e1e1e;
       --primary-light: #666;
-      --primary-dark: #ccc;
       --error: #ff4d4d;
       --transition-speed: 0.3s;
     }
@@ -38,11 +26,6 @@
       margin: auto;
       max-width: 550px;
       transition: background-color var(--transition-speed), color var(--transition-speed);
-    }
-
-    html.dark body {
-      background-color: var(--bg-dark);
-      color: var(--text-light);
     }
 
     h1 {
@@ -96,10 +79,6 @@
       transform: scale(1.02);
     }
 
-    html.dark button {
-      background-color: var(--primary-dark);
-    }
-
     .result {
       margin-top: 20px;
       font-size: 1rem;
@@ -108,10 +87,6 @@
       border-radius: 6px;
       display: none;
       animation: fadeIn 0.4s ease-in-out;
-    }
-
-    html.dark .result {
-      background-color: #333;
     }
 
     table {
@@ -140,10 +115,6 @@
       background-color: #eee;
     }
 
-    html.dark tbody tr:nth-child(even) {
-      background-color: #2b2b2b;
-    }
-
     #clearHistoryBtn {
       background-color: #888;
     }
@@ -152,19 +123,10 @@
       background-color: #555;
     }
 
-    #toggleThemeBtn {
-      background-color: #aaa;
-      margin-top: 10px;
-    }
-
-    #toggleThemeBtn:hover {
-      background-color: #666;
-    }
-
     .footer-note {
       margin-top: 40px;
       font-size: 0.85rem;
-      color: #ccc;
+      color: #444;
       text-align: left;
     }
 
@@ -203,27 +165,12 @@
   </table>
 
   <button id="clearHistoryBtn" onclick="clearHistory()">Clear History</button>
-  <button id="toggleThemeBtn" onclick="toggleTheme()">Toggle Dark Mode</button>
   <button onclick="alert('Please direct any complaints or suggestions to hfreysson@gmail.com')">Support</button>
 
   <div class="footer-note">Made by Hrannar Freysson</div>
 
   <script>
     const maxEntries = 20;
-
-    function applyTheme() {
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    }
-
-    function toggleTheme() {
-      const isDark = document.documentElement.classList.toggle('dark');
-      localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    }
 
     function loadHistory() {
       const history = JSON.parse(localStorage.getItem('calcHistory')) || [];
@@ -316,10 +263,7 @@
       }
     }
 
-    window.onload = function () {
-      applyTheme();
-      loadHistory();
-    };
+    window.onload = loadHistory;
   </script>
 
   <script>
